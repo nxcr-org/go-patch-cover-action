@@ -51,6 +51,13 @@ inputs:
       The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create or update the comment. This defaults to {{ github.token }}.
     default: '${{ github.token }}'
     required: false
+  comment_identifier:
+    description: |
+      Provide a comment_identifier to enable multiple test coverage reports within a single PR.
+
+      This identifier is used to query for the exact specific PR comment with test coverage. It is also added to the comment to help distinguish between the comments.
+    default: ''
+    required: false
 runs:
   using: "composite"
   steps:
@@ -69,8 +76,12 @@ runs:
     - if: github.event_name == 'pull_request'
       run: |
         patch_tmpl=$(cat <<EOF
-        <!-- go-patch-cover/report -->
+        <!-- go-patch-cover/report {{ inputs.comment_identifier }} -->
         <img src="https://badges.seriousben.com/badge?label=Patch%20Coverage&description={{printf "%.1f" .PatchCoverage}}%25" />
+
+        {{- if inputs.comment_identifier != '' -}}
+        <h3>Test Coverage for: {{ inputs.comment_identifier }}</h3>
+        {{ end -}}
 
         <table>
         {{- if .HasPrevCoverage -}}
@@ -116,7 +127,7 @@ runs:
     - if: github.event_name == 'pull_request'
       run: |
         comment_body=$(cat <<EOF
-        <!-- go-patch-cover/report -->
+        <!-- go-patch-cover/report {{ inputs.comment_identifier }} -->
         $GO_PATCH_COVER_OUT
         EOF
         )
@@ -135,7 +146,7 @@ runs:
               }
             }
           }
-        ' --jq '.data.node.comments.nodes | map(select((.body | contains("<!-- go-patch-cover/report -->")) and .isMinimized == false)) | map(.id)[]')"
+        ' --jq '.data.node.comments.nodes | map(select((.body | contains("<!-- go-patch-cover/report {{ inputs.comment_identifier }} -->")) and .isMinimized == false)) | map(.id)[]')"
 
         if [[ -n "$comments" ]]; then
           for val in $comments; do
