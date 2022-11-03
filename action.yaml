@@ -76,7 +76,6 @@ runs:
     - if: github.event_name == 'pull_request'
       run: |
         patch_tmpl=$(cat <<EOF
-        <!-- go-patch-cover/report ${comment_identifier} -->
         <img src="https://badges.seriousben.com/badge?label=Patch%20Coverage&description={{printf "%.1f" .PatchCoverage}}%25" />
 
         <h3>Test Coverage for: ${coverage_filename}</h3>
@@ -122,7 +121,6 @@ runs:
         diff_filename : ${{ inputs.diff_filename }}
         previous_coverage_filename : ${{ inputs.previous_coverage_filename }}
         github_token: ${{ inputs.github_token }}
-        comment_identifier: ${{ inputs.comment_identifier }}
     - if: github.event_name == 'pull_request'
       run: |
         comment_string_to_match="<!-- go-patch-cover/report ${comment_identifier} -->"
