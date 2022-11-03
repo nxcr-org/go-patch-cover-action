@@ -123,7 +123,7 @@ runs:
         github_token: ${{ inputs.github_token }}
     - if: github.event_name == 'pull_request'
       run: |
-        comment_string_to_match="<!-- go-patch-cover/report ${comment_identifier} -->"
+        comment_string_to_match="<\!-- go-patch-cover/report ${comment_identifier} -->"
 
         comment_body=$(cat <<EOF
         ${comment_string_to_match}
@@ -145,7 +145,7 @@ runs:
               }
             }
           }
-        ' --jq \".data.node.comments.nodes | map(select((.body | contains($comment_string_to_match)) and .isMinimized == false)) | map(.id)[]\")"
+        ' --jq ".data.node.comments.nodes | map(select((.body | contains(\"$comment_string_to_match\")) and .isMinimized == false)) | map(.id)[]")"
 
         if [[ -n "$comments" ]]; then
           for val in $comments; do
