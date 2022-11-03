@@ -76,12 +76,10 @@ runs:
     - if: github.event_name == 'pull_request'
       run: |
         patch_tmpl=$(cat <<EOF
-        <!-- go-patch-cover/report {{ inputs.comment_identifier }} -->
+        <!-- go-patch-cover/report ${comment_identifier} -->
         <img src="https://badges.seriousben.com/badge?label=Patch%20Coverage&description={{printf "%.1f" .PatchCoverage}}%25" />
 
-        {{- if inputs.comment_identifier != '' -}}
-        <h3>Test Coverage for: {{ inputs.comment_identifier }}</h3>
-        {{ end -}}
+        <h3>Test Coverage for: ${coverage_filename}</h3>
 
         <table>
         {{- if .HasPrevCoverage -}}
@@ -124,10 +122,11 @@ runs:
         diff_filename : ${{ inputs.diff_filename }}
         previous_coverage_filename : ${{ inputs.previous_coverage_filename }}
         github_token: ${{ inputs.github_token }}
+        comment_identifier: ${{ inputs.comment_identifier }}
     - if: github.event_name == 'pull_request'
       run: |
         comment_body=$(cat <<EOF
-        <!-- go-patch-cover/report {{ inputs.comment_identifier }} -->
+        <!-- go-patch-cover/report ${comment_identifier} -->
         $GO_PATCH_COVER_OUT
         EOF
         )
@@ -146,7 +145,7 @@ runs:
               }
             }
           }
-        ' --jq '.data.node.comments.nodes | map(select((.body | contains("<!-- go-patch-cover/report {{ inputs.comment_identifier }} -->")) and .isMinimized == false)) | map(.id)[]')"
+        ' --jq '.data.node.comments.nodes | map(select((.body | contains("<!-- go-patch-cover/report ${comment_identifier} -->")) and .isMinimized == false)) | map(.id)[]')"
 
         if [[ -n "$comments" ]]; then
           for val in $comments; do
@@ -173,6 +172,7 @@ runs:
         OWNER: ${{ github.repository_owner }}
         REPO: ${{ github.event.repository.name }}
         PULL_REQUEST_NODE_ID: ${{ github.event.pull_request.node_id }}
+        comment_identifier: ${{ inputs.comment_identifier }}
     - name: Save Coverage
       if: github.event_name == 'push' && inputs.prev_coverage_mode == 'git-notes'
       run: |

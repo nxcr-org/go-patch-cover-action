@@ -25,3 +25,10 @@ jobs:
         version: main
         coverage_filename: testdata/coverage.out
         diff_filename: testdata/diff.diff
+    - name: Multiple Patch Coverage Example
+      uses: ./
+      with:
+        version: main
+        coverage_filename: testdata/coverage.out
+        diff_filename: testdata/diff.diff
+        comment_identifier: 2nd comment example
